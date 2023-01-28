@@ -13,6 +13,8 @@ Mastodon bot to post random science and tech museum images from the Smithsonian 
   - [requests](https://requests.readthedocs.io/en/latest/)
   - [python-resize-image](https://github.com/VingtCinq/python-resize-image)
 
+Edit `lambda_function.py` to set the Smithsonian API key (sign up [here](https://api.data.gov/signup/)) and the Mastodon access token for your bot account (viewable under settings once the account has been marked as a bot account).
+
 
 ## Deploying on AWS
 
