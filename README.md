@@ -28,7 +28,7 @@ zip bot.zip lambda_function.py
 zip bot.zip unit_codes.json
 ```
 
-The Pillow and PIL diretories are deleted from the package above as they are not compatible with the Lambda environment. Instead, the Pillow library can be added a layer by ARN `arn:aws:lambda:us-east-1:770693421928:layer:Klayers-p39-pillow:1`, found in [Keith's layers](https://github.com/keithrozario/Klayers/).
+The Pillow and PIL diretories are deleted from the package above as they are not compatible with the Lambda environment. Instead, the Pillow library can be added as a layer by ARN `arn:aws:lambda:us-east-1:770693421928:layer:Klayers-p39-pillow:1`, found in [Keith's layers](https://github.com/keithrozario/Klayers/).
 
 Upload the `bot.zip` file created above to a new Lambda function and add the Pillow layer.
 
