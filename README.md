@@ -4,7 +4,6 @@ Mastodon bot to post random science and tech museum images from the Smithsonian 
 
 (Not affiliated with the Smithsonian.)
 
-
 ## Requirements
 
  This Python script uses the packages:
