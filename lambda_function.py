@@ -10,8 +10,8 @@ import requests
 
 
 API_GOV_KEY = ""  # key to call Smithsonian API. Sign up at: https://api.data.gov/signup/
-MASTO_ACCESS_TOKEN = ""
-MASTO_BASE_URL = "https://botsin.space"
+MASTO_ACCESS_TOKEN = "" # access token for your bot (under dev settings)
+MASTO_BASE_URL = "https://banderkat.social" # URL to your Mastodon server
 IMAGE_PATH = "/tmp/smith_image.jpg"
 UNIT_CODES_PATH = "unit_codes.json"
 BASE_API_URL = (
@@ -96,8 +96,9 @@ def process_response(resp_json, random_unit_code):
 
 
 def find_image(id, title, content):
-    desc = content.get("descriptiveNonRepeating")
-    media = desc.get("online_media").get("media")
+    desc = content.get("descriptiveNonRepeating") if content is not None else None
+    online_media = desc.get("online_media") if desc is not None else None
+    media = online_media.get("media") if online_media is not None else ""
     for medium in media:
         image_url = medium.get("content")
         if image_url:

@@ -1,6 +1,6 @@
 # Mastodon bot 🤖
 
-[@sciencetechimages@botsin.space](https://botsin.space/@sciencetechimages)
+[@sciencetechimages@banderkat.social](https://banderkat.social/@sciencetechimages)
 
 Mastodon bot to post random science and tech museum images from the Smithsonian API.
 
