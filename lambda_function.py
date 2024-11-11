@@ -21,6 +21,8 @@ MAX_IMAGE_SIZE = 1048576 * 10
 MAX_PIXELS = 1638400
 IMAGE_RESIZE = 1280
 FREE_LICENSE = "CC0"
+MAX_DESCRIPTION_LEN = 1500 # max size of a status post
+MAX_FIELD_LEN = 200 # arbitrary cutoff max length for a line in the post
 
 unit_codes = {}
 with open(UNIT_CODES_PATH, "r") as unit_codes_file:
@@ -145,20 +147,50 @@ def upload_image(id, title, content, desc, image_url, image_response):
     return post_to_mastodon(id, title, desc, content)
 
 
+def build_tag_from_freetext(freetext, fieldName):
+    free_tag_label = ""
+    free_field = freetext.get(fieldName)
+    if free_field and len(free_field) > 0:
+        for free_tag in free_field:
+            free_tag_label += f"\n{free_tag.get('label')}: {free_tag.get('content')}"
+    return free_tag_label if len(free_tag_label) < MAX_FIELD_LEN else ""
+
+
 def post_to_mastodon(id, title, desc, content):
     unit_code = desc.get("unit_code")
     link = desc.get("record_link")
-    freetext = content.get("freetext")
+    freetext = content.get("freetext") if content is not None else None
     place = content.get("place")
-    if place and len(place) > 0:
-        place = place[0].get("content")
-    collection_date = freetext.get("date")
-    if collection_date and len(collection_date) > 0:
-        collection_date = collection_date[0].get("content")
+    if not place:
+        place = build_tag_from_freetext(freetext, "place")
+    collection_date = build_tag_from_freetext(freetext, "date")
+    freetext_name = build_tag_from_freetext(freetext, "name")
+    freetext_notes = build_tag_from_freetext(freetext, "notes")
+    freetext_physical_description = build_tag_from_freetext(freetext, "physicalDescription")
+    freetext_credit_line = build_tag_from_freetext(freetext, "creditLine")
+    freetext_data_source = build_tag_from_freetext(freetext, "dataSource")
+    freetext_object_type = build_tag_from_freetext(freetext, "objectType")
+
+    freetext_info = ''
+    if freetext_name:
+        freetext_info += f"\n{freetext_name}"
+    if freetext_notes:
+        freetext_info += f"\n{freetext_notes}"
+    if freetext_physical_description:
+        freetext_info += f"\n{freetext_physical_description}"
+    if freetext_object_type:
+        freetext_info += f"\n{freetext_object_type}"
+    if freetext_credit_line:
+        freetext_info += f"\n{freetext_credit_line}"
+    if freetext_data_source:
+        freetext_info += f"\n{freetext_data_source}"
+
+    if len(freetext_info) > (MAX_DESCRIPTION_LEN - MAX_FIELD_LEN):
+        freetext_info = ''
 
     museum = unit_codes.get(unit_code, unit_code)
     print(
-        f"ID: {id} museum: {museum} place: {place} date: {collection_date} link: {link}"
+        f"ID: {id} museum: {museum} place: {place} date: {collection_date} link: {link} freetext info: {freetext_info}"
     )
     try:
         mastodon = Mastodon(
@@ -166,8 +198,14 @@ def post_to_mastodon(id, title, desc, content):
         )
         print("Connected to Mastodon successfully")
         masto_media = None
+        alt_text = title
+        if freetext_name:
+            alt_text += f"\n{freetext_name}"
+        if freetext_physical_description:
+            alt_text += f"\n{freetext_physical_description}"
+
         masto_media = mastodon.media_post(
-            IMAGE_PATH, description=title, mime_type="image/jpeg"
+            IMAGE_PATH, description=alt_text, mime_type="image/jpeg"
         )
         media_id = masto_media.get("id")
         if media_id:
@@ -179,6 +217,8 @@ def post_to_mastodon(id, title, desc, content):
                 status += f"\n{collection_date}"
             if link:
                 status += f"\n{link}"
+            if freetext_info and (len(status + freetext_info) < MAX_DESCRIPTION_LEN):
+                status += f"\n{freetext_info}"
             toot = mastodon.status_post(
                 status, media_ids=[media_id], visibility="public", language="en"
             )
